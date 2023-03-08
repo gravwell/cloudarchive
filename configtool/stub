@@ -1,0 +1,31 @@
+[global]
+Indexer-UUID=00000000-0000-0000-0000-000000000000
+### Authentication tokens
+Ingest-Auth=IngestSecrets
+Control-Auth=ControlSecrets
+Search-Agent-Auth=SearchAgentSecrets
+
+### Web server HTTP/HTTPS settings
+Web-Port=80
+Insecure-Disable-HTTPS=true
+#Web-Port=443
+#Certificate-File=/opt/gravwell/etc/cert.pem
+#Key-File=/opt/gravwell/etc/key.pem
+
+### Other web server settings
+Remote-Indexers=net:127.0.0.1:9404
+Persist-Web-Logins=True
+Session-Timeout-Minutes=1440
+Login-Fail-Lock-Count=4
+Login-Fail-Lock-Duration=5
+
+### Ingester settings
+Search-Pipeline-Buffer-Size=4
+
+### Other settings
+Log-Level=INFO
+
+### Paths
+Tag-DB-Path=/opt/gravwell/storage/tags.dat
+
+
