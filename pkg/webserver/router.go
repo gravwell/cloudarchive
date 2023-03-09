@@ -6,6 +6,8 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+package webserver
+
 import (
 	"bufio"
 	"errors"
