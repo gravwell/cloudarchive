@@ -31,8 +31,12 @@ import (
 	"github.com/gravwell/cloudarchive/pkg/filestore"
 	"github.com/gravwell/cloudarchive/pkg/tags"
 	"github.com/gravwell/cloudarchive/pkg/webserver"
+	"goftp.io/server"
+	"goftp.io/server/core"
+	"goftp.io/server/driver/file"
 
 	"github.com/google/uuid"
+	"github.com/gravwell/gravwell/v3/ingest/entry"
 	gravlog "github.com/gravwell/gravwell/v3/ingest/log"
 )
 
@@ -45,12 +49,14 @@ const (
 )
 
 var (
-	idxUUID      uuid.UUID
-	baseDir      string
-	serverDir    string
-	keyFile      string
-	certFile     string
-	passwordFile string
+	idxUUID       uuid.UUID
+	baseDir       string
+	localStoreDir string
+	ftpServerDir  string
+	serverDir     string
+	keyFile       string
+	certFile      string
+	passwordFile  string
 
 	ws *webserver.Webserver
 )
@@ -147,6 +153,12 @@ func cleanup() {
 	if err := os.RemoveAll(serverDir); err != nil {
 		log.Fatal(err)
 	}
+	if err := os.RemoveAll(localStoreDir); err != nil {
+		log.Fatal(err)
+	}
+	if err := os.RemoveAll(ftpServerDir); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func TestMain(m *testing.M) {
@@ -156,6 +168,9 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	if serverDir, err = ioutil.TempDir(os.TempDir(), "gravcloud"); err != nil {
+		log.Fatal(err)
+	}
+	if localStoreDir, err = ioutil.TempDir(os.TempDir(), "gravcloud_ftp_localstore"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -183,8 +198,34 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
+	// Stand up the FTP server
+	if ftpServerDir, err = ioutil.TempDir(os.TempDir(), "gravcloud_ftp"); err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(ftpServerDir)
+	fperm := core.NewSimplePerm("gravwell", "gravgroup")
+	factory := &file.DriverFactory{
+		RootPath: ftpServerDir,
+		Perm:     fperm,
+	}
+	fauth := &core.SimpleAuth{
+		Name:     "gravwell",
+		Password: "testpass",
+	}
+	ftpServer := server.NewServer(&server.ServerOpts{
+		Logger:   &core.DiscardLogger{},
+		Auth:     fauth,
+		Factory:  factory,
+		Port:     2000,
+		Hostname: "127.0.0.1",
+	})
+	go func() {
+		ftpServer.ListenAndServe()
+	}()
+
 	r := m.Run()
 
+	ftpServer.Shutdown()
 	cleanup()
 	os.Exit(r)
 }
@@ -325,6 +366,70 @@ func TestClientShardPush(t *testing.T) {
 	}
 }
 
+func TestClientShardPull(t *testing.T) {
+	// Start a webserver
+	if err := launchWebserver(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Connect to it
+	cli, err := NewClient(listenAddr, false, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// log in
+	err = cli.Login(fmt.Sprintf("%d", custNum), custPass)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	shardid := `769f2`
+	sid := ShardID{
+		Indexer: idxUUID,
+		Well:    `foo`,
+		Shard:   shardid,
+	}
+
+	sdir := filepath.Join(baseDir, "pull", shardid)
+	cancel := make(chan bool, 1)
+	if err = cli.PullShard(sid, sdir, cancel); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := validateShardExists(sdir, shardid); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = ws.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func validateShardExists(shardDir, shardID string) (err error) {
+	// Now look to see if it showed up
+	if !fileExists(shardDir) {
+		err = fmt.Errorf("%v does not exist!", shardDir)
+		return
+	}
+	extensions := []string{"index", "verify", "store", "accel", "accel/keys", "accel/data"}
+	for _, ext := range extensions {
+		if p := filepath.Join(shardDir, shardID+"."+ext); !fileExists(p) {
+			err = fmt.Errorf("%v does not exist!", p)
+			return
+		}
+	}
+	return
+}
+
+// we assume a file/dir "exists" if we can stat it.
+func fileExists(path string) bool {
+	if _, err := os.Stat(path); err == nil {
+		return true // simplified, sure
+	}
+	return false
+}
+
 func TestClientListIndexers(t *testing.T) {
 	// Start a webserver
 	if err := launchWebserver(); err != nil {
@@ -453,6 +558,87 @@ func TestClientGetTimeframe(t *testing.T) {
 	}
 }
 
+func TestClientPullTags(t *testing.T) {
+	// Start a webserver
+	if err := launchWebserver(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Connect to it
+	cli, err := NewClient(listenAddr, false, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// log in
+	err = cli.Login(fmt.Sprintf("%d", custNum), custPass)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tagset, err := cli.PullTags(idxUUID.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tagset) != 3 {
+		t.Fatalf("Invalid tagset, expected 3 tags got: %+v\n", tagset)
+	}
+	if err = ws.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestClientSyncTags(t *testing.T) {
+	// Start a webserver
+	if err := launchWebserver(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Connect to it
+	cli, err := NewClient(listenAddr, false, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// log in
+	err = cli.Login(fmt.Sprintf("%d", custNum), custPass)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Pull the tags
+	tagset, err := cli.PullTags(idxUUID.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tagset) != 3 {
+		t.Fatalf("Invalid tagset, expected 3 tags got: %+v\n", tagset)
+	}
+
+	// Now add a new tag
+	tagset = append(tagset, tags.TagPair{Name: "xyzzy", Value: entry.EntryTag(100)})
+	if newset, err := cli.SyncTags(idxUUID.String(), tagset); err != nil {
+		t.Fatal(err)
+	} else {
+		if len(newset) != 4 {
+			t.Fatalf("Expected 4 tags in new tag set, got %v", len(newset))
+		}
+		var ok bool
+		for _, t := range newset {
+			if t.Name == "xyzzy" {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			t.Fatalf("Did not find newly-added tag in tag set %v", newset)
+		}
+	}
+	if err = ws.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func makeShardDir(p, id string) error {
 	if err := os.Mkdir(p, 0700); err != nil {
 		return err
@@ -478,9 +664,18 @@ func makeShardDir(p, id string) error {
 		return err
 	}
 
-	//drop accel file
+	//drop accel files
 	fpath = filepath.Join(p, id+`.accel`)
-	data = []byte(`accel stuff`)
+	if err := os.MkdirAll(fpath, 0770); err != nil {
+		return err
+	}
+	fpath = filepath.Join(p, id+`.accel`, `data`)
+	data = []byte(`accel data`)
+	if err := ioutil.WriteFile(fpath, data, 0660); err != nil {
+		return err
+	}
+	fpath = filepath.Join(p, id+`.accel`, `keys`)
+	data = []byte(`accel keys`)
 	if err := ioutil.WriteFile(fpath, data, 0660); err != nil {
 		return err
 	}

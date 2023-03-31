@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gravwell/cloudarchive/pkg/shardpacker"
@@ -32,6 +33,8 @@ var (
 type ShardID int64
 
 func ShardNameToDateRange(nm string) (s, e time.Time, err error) {
+	// First trim the name
+	nm = trimVersion(nm)
 	var v int64
 	if v, err = strconv.ParseInt(nm, 16, 64); err != nil {
 		return
@@ -57,7 +60,7 @@ func NextShardId(curr ShardID) ShardID {
 }
 
 func AddShardFilesToPacker(spath, id string, pkr *shardpacker.Packer) (err error) {
-
+	id = trimVersion(id)
 	//grab the verify file
 	if err = addFile(spath, id, shardpacker.Verify, pkr, true); err != nil {
 		return
@@ -129,4 +132,8 @@ func getHandleAndSize(p string) (fio *os.File, sz int64, err error) {
 	}
 	sz = fi.Size()
 	return
+}
+
+func trimVersion(nm string) string {
+	return strings.TrimSuffix(nm, filepath.Ext(nm))
 }
