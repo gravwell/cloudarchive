@@ -22,17 +22,34 @@ import (
 const (
 	MAX_CONFIG_SIZE   int64  = (1024 * 1024 * 2) //2MB, even this is crazy large
 	defaultListenPort uint16 = 443
+
+	BackendTypeFTP  = "ftp"
+	BackendTypeFile = "file"
+
+	DefaultBackendType = BackendTypeFile
 )
 
 type cfgType struct {
 	Global struct {
-		Listen_Address    string
-		Cert_File         string
-		Key_File          string
-		Password_File     string
-		Log_File          string
-		Log_Level         string
+		Listen_Address string
+		Cert_File      string
+		Key_File       string
+		Password_File  string
+		Log_File       string
+		Log_Level      string
+
+		// Select the storage backend
+		Backend_Type string
+		// Storage-Directory is used by file *and* ftp, because the FTP backend
+		// also needs a place to stage some files.
 		Storage_Directory string
+		// File backend options
+		// (currently no file-specific options)
+		// FTP backend options
+		FTP_Server            string // addr:port
+		Remote_Base_Directory string // the base directory on the FTP server to use, if the default dir isn't acceptable
+		FTP_Username          string
+		FTP_Password          string
 	}
 }
 
@@ -79,10 +96,27 @@ func verifyConfig(c *cfgType) error {
 	if c.Global.Password_File == `` {
 		return errors.New("Must specify Password-File")
 	}
+
+	// Figure out what kind of backend we're going to use
+	if c.Global.Backend_Type == `` {
+		c.Global.Backend_Type = DefaultBackendType
+	}
 	if c.Global.Storage_Directory == `` {
 		return errors.New("Must specify Storage-Directory")
 	} else if err := writableDir(c.Global.Storage_Directory); err != nil {
 		return fmt.Errorf("Storage-Directory error %v", err)
+	}
+	switch c.Global.Backend_Type {
+	case BackendTypeFile:
+	case BackendTypeFTP:
+		if c.Global.FTP_Server == `` {
+			return errors.New("Must specify FTP-Server")
+		} else if c.Global.FTP_Username == `` {
+			return errors.New("Must specify FTP-Username")
+		} else if c.Global.FTP_Password == `` {
+			return errors.New("Must specify FTP-Password")
+		}
+		// it's ok to leave Remote-Base-Directory empty.
 	}
 	if c.Global.Listen_Address == `` {
 		return fmt.Errorf("Listen-Address is empty")

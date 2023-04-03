@@ -190,6 +190,7 @@ func (f *ftpstore) UnpackShard(cid uint64, idxUUID uuid.UUID, well, shard string
 
 	c, err := f.getFtpClient()
 	if err != nil {
+		f.ExitUpload(uid)
 		return err
 	}
 
@@ -222,6 +223,7 @@ func (f *ftpstore) UnpackShard(cid uint64, idxUUID uuid.UUID, well, shard string
 		bdir:       indexerDir,
 		guid:       idxUUID,
 	}
+	h.ensureTagsDat()
 	//generate a new shard unpacker
 	if up, err = shardpacker.NewUnpacker(shard, rdr); err != nil {
 		c.RemoveDirRecur(shardDir)
@@ -425,7 +427,7 @@ func (f *ftpstore) SyncTags(cid uint64, guid uuid.UUID, idxTags []tags.TagPair) 
 }
 
 func ftpDirExists(c *ftp.ServerConn, path string) bool {
-	_, err := c.List(path)
+	_, err := c.GetEntry(path)
 	if err == nil {
 		return true
 	}
@@ -433,11 +435,16 @@ func ftpDirExists(c *ftp.ServerConn, path string) bool {
 }
 
 func ftpMkdirAll(c *ftp.ServerConn, path string) error {
+	// We grab the lock because this can be a little racy
+	ftpSync.Lock()
+	defer ftpSync.Unlock()
 	dirs := strings.Split(path, string(os.PathSeparator))
 	for i := range dirs {
 		p := strings.Join(dirs[:i+1], string(os.PathSeparator))
-		if err := c.MakeDir(p); err != nil {
-			return err
+		if !ftpDirExists(c, p) {
+			if err := c.MakeDir(p); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

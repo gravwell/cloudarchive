@@ -16,6 +16,7 @@ import (
 
 	"github.com/gravwell/cloudarchive/pkg/auth"
 	"github.com/gravwell/cloudarchive/pkg/filestore"
+	"github.com/gravwell/cloudarchive/pkg/ftpstore"
 	"github.com/gravwell/cloudarchive/pkg/webserver"
 
 	"github.com/gravwell/gravwell/v3/ingest/log"
@@ -55,9 +56,24 @@ func main() {
 		glog.Fatalf("Failed to set log level %v: %v", cfg.Global.Log_Level, err)
 	}
 
-	fstore, err := filestore.NewFilestoreHandler(cfg.Global.Storage_Directory)
-	if err != nil {
-		lgr.Fatalf("Failed to create a new file store handler: %v", err)
+	var handler webserver.ShardHandler
+	switch cfg.Global.Backend_Type {
+	case BackendTypeFile:
+		handler, err = filestore.NewFilestoreHandler(cfg.Global.Storage_Directory)
+		if err != nil {
+			lgr.Fatalf("Failed to create a new file store handler: %v", err)
+		}
+	case BackendTypeFTP:
+		fcfg := ftpstore.FtpStoreConfig{
+			LocalStore: cfg.Global.Storage_Directory,
+			FtpServer:  cfg.Global.FTP_Server,
+			Username:   cfg.Global.FTP_Username,
+			Password:   cfg.Global.FTP_Password,
+		}
+		handler, err = ftpstore.NewFtpStoreHandler(fcfg)
+		if err != nil {
+			lgr.Fatalf("Failed to create new ftp store handler: %v", err)
+		}
 	}
 
 	fileAuth, err := auth.NewAuthModule(cfg.Global.Password_File)
@@ -70,7 +86,7 @@ func main() {
 		CertFile:     cfg.Global.Cert_File,
 		KeyFile:      cfg.Global.Key_File,
 		Logger:       lgr,
-		ShardHandler: fstore,
+		ShardHandler: handler,
 		Auth:         fileAuth,
 	}
 
