@@ -24,8 +24,18 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-write v0.0.0-20181107114627-56629a6b2542 // indirect
 	github.com/google/renameio v0.1.0 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/jlaffaye/ftp v0.1.0 // indirect
+	github.com/minio/minio-go/v6 v6.0.46 // indirect
+	github.com/minio/sha256-simd v0.1.1 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/shirou/gopsutil v2.20.9+incompatible // indirect
+	goftp.io/server v0.4.1 // indirect
+	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/term v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
+	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )

@@ -10,13 +10,13 @@ package filestore
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/gravwell/cloudarchive/pkg/shardpacker"
 	"github.com/gravwell/cloudarchive/pkg/tags"
@@ -27,28 +27,13 @@ import (
 )
 
 var (
-	empty es
-
-	ErrMissingBaseDir      = errors.New("Empty base directory for file store")
-	ErrUploadInProgress    = errors.New("Shard upload already in progress")
-	ErrUploadNotInProgress = errors.New("Shard upload not in progress")
+	ErrMissingBaseDir = errors.New("Empty base directory for file store")
 )
 
 type filestore struct {
-	sync.Mutex
+	util.UploadTracker
 	basedir string
-	active  map[uploadID]es
 }
-
-type uploadID struct {
-	cid     uint64    //customer ID
-	idxUUID uuid.UUID //indexer UUID
-	well    string    //well name
-	shard   string    //shard ID
-}
-
-// empty struct for efficient map storage
-type es struct{}
 
 func NewFilestoreHandler(bdir string) (*filestore, error) {
 	if bdir == `` {
@@ -57,35 +42,9 @@ func NewFilestoreHandler(bdir string) (*filestore, error) {
 		return nil, err
 	}
 	return &filestore{
-		basedir: bdir,
-		active:  make(map[uploadID]es, 16),
+		basedir:       bdir,
+		UploadTracker: util.NewUploadTracker(),
 	}, nil
-}
-
-// enterUpload attempts to claim an upload ID, if an upload with the existing ID
-// exists an error is returnd
-func (f *filestore) enterUpload(uid uploadID) (err error) {
-	f.Lock()
-	if _, ok := f.active[uid]; ok {
-		err = ErrUploadInProgress
-	} else {
-		f.active[uid] = empty
-	}
-	f.Unlock()
-	return
-}
-
-// exitUpload releases an existing upload lock for a given shard
-// if the shard wasn't locked, and error is returned
-func (f *filestore) exitUpload(uid uploadID) (err error) {
-	f.Lock()
-	if _, ok := f.active[uid]; ok {
-		delete(f.active, uid)
-	} else {
-		err = ErrUploadNotInProgress
-	}
-	f.Unlock()
-	return
 }
 
 func (f *filestore) ListIndexes(cid uint64) ([]string, error) {
@@ -181,16 +140,16 @@ func (f *filestore) GetShardsInTimeframe(cid uint64, guid uuid.UUID, well string
 
 func (f *filestore) UnpackShard(cid uint64, idxUUID uuid.UUID, well, shard string, rdr io.Reader) (err error) {
 	var up *shardpacker.Unpacker
-	uid := uploadID{
-		cid:     cid,
-		idxUUID: idxUUID,
-		well:    well,
-		shard:   shard,
+	uid := util.UploadID{
+		CID:     cid,
+		IdxUUID: idxUUID,
+		Well:    well,
+		Shard:   shard,
 	}
 
 	//create directory structure if it does not exist
 
-	if err = f.enterUpload(uid); err != nil {
+	if err = f.EnterUpload(uid); err != nil {
 		return
 	}
 
@@ -200,8 +159,18 @@ func (f *filestore) UnpackShard(cid uint64, idxUUID uuid.UUID, well, shard strin
 
 	//do the same for the shard upload location
 	shardDir := filepath.Join(indexerDir, well, shard)
+	base := shardDir
+	// Check if this shard already exists. If so, we'll keep adding .N suffixes until it works
+	// We'll try up to some arbitrary big number... but we won't create shards infinitely forever,
+	// in case an indexer is somehow misconfigured.
+	for i := 1; i < 10000; i++ {
+		if _, err := os.Stat(shardDir); errors.Is(err, os.ErrNotExist) {
+			break
+		}
+		shardDir = fmt.Sprintf("%s.%d", base, i)
+	}
 	if err = os.MkdirAll(shardDir, 0770); err != nil {
-		f.exitUpload(uid)
+		f.ExitUpload(uid)
 		return
 	}
 
@@ -214,31 +183,31 @@ func (f *filestore) UnpackShard(cid uint64, idxUUID uuid.UUID, well, shard strin
 	//generate a new shard unpacker
 	if up, err = shardpacker.NewUnpacker(shard, rdr); err != nil {
 		os.RemoveAll(shardDir)
-		f.exitUpload(uid)
+		f.ExitUpload(uid)
 		return
 	}
 	//perform the actual unpack
 	if err = up.Unpack(h); err != nil {
 		os.RemoveAll(shardDir)
-		f.exitUpload(uid)
+		f.ExitUpload(uid)
 		return
 	}
 
 	//release the shard
-	err = f.exitUpload(uid)
+	err = f.ExitUpload(uid)
 	return
 }
 
 func (f *filestore) PackShard(cid uint64, idxUUID uuid.UUID, well, shard string, wtr io.Writer) (err error) {
-	uid := uploadID{
-		cid:     cid,
-		idxUUID: idxUUID,
-		well:    well,
-		shard:   shard,
+	uid := util.UploadID{
+		CID:     cid,
+		IdxUUID: idxUUID,
+		Well:    well,
+		Shard:   shard,
 	}
 	p := shardpacker.NewPacker(shard)
 
-	if err = f.enterUpload(uid); err != nil {
+	if err = f.EnterUpload(uid); err != nil {
 		return
 	}
 
@@ -249,7 +218,7 @@ func (f *filestore) PackShard(cid uint64, idxUUID uuid.UUID, well, shard string,
 	//do the same for the shard upload location
 	shardDir := filepath.Join(indexerDir, well, shard)
 	if err = readableDir(shardDir); err != nil {
-		f.exitUpload(uid)
+		f.ExitUpload(uid)
 		return
 	}
 
@@ -298,9 +267,9 @@ func (f *filestore) PackShard(cid uint64, idxUUID uuid.UUID, well, shard string,
 
 	//release the shard, setting error appropriately
 	if err == nil {
-		err = f.exitUpload(uid)
+		err = f.ExitUpload(uid)
 	} else {
-		f.exitUpload(uid)
+		f.ExitUpload(uid)
 	}
 
 	return

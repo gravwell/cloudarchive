@@ -58,6 +58,10 @@ func CloseTagSets() (err error) {
 	return
 }
 
+func GetTagDatPath(basedir string) string {
+	return filepath.Join(basedir, TAG_MANAGER_FILENAME)
+}
+
 func GetTagMan(id uint64, guid uuid.UUID, basedir string) (tm *TagMan, err error) {
 	var ok bool
 	var v vset
@@ -65,7 +69,7 @@ func GetTagMan(id uint64, guid uuid.UUID, basedir string) (tm *TagMan, err error
 		id:   id,
 		guid: guid,
 	}
-	tpath := filepath.Join(basedir, TAG_MANAGER_FILENAME)
+	tpath := GetTagDatPath(basedir)
 	mtx.Lock()
 	if tagSets == nil {
 		err = ErrManagerClosed

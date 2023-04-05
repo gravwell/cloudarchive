@@ -50,7 +50,7 @@ type Packer struct {
 	io.ReadCloser
 	sync.Mutex
 	ftracker
-	id   string
+	id   string // the shard ID, e.g. 76dd1
 	ctx  context.Context
 	cf   context.CancelFunc
 	twtr *tar.Writer
@@ -72,7 +72,7 @@ type ftracker struct {
 
 func NewPacker(id string) (p *Packer) {
 	p = &Packer{
-		id: id,
+		id: trimVersion(id), // we do this to make sure there's no dangling .1 on the shard name
 	}
 	p.ctx, p.cf = context.WithCancel(context.Background())
 	p.prdr, p.pwtr = io.Pipe() //get a pipe wired up

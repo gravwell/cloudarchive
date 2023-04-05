@@ -15,6 +15,8 @@ import (
 	"encoding/gob"
 	"errors"
 	"io"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/dolmen-go/contextio"
@@ -42,6 +44,7 @@ type Unpacker struct {
 }
 
 func NewUnpacker(id string, rdr io.Reader) (up *Unpacker, err error) {
+	id = trimVersion(id)
 	if rdr == nil {
 		err = ErrInvalidUnpackerParams
 		return
@@ -123,4 +126,8 @@ func (up *Unpacker) updateTags(trdr io.Reader, uph UnpackHandler) (err error) {
 		return
 	}
 	return up.hitType(TagsUpdate)
+}
+
+func trimVersion(nm string) string {
+	return strings.TrimSuffix(nm, filepath.Ext(nm))
 }
