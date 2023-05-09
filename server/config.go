@@ -32,6 +32,7 @@ const (
 type cfgType struct {
 	Global struct {
 		Listen_Address string
+		Disable_TLS    bool
 		Cert_File      string
 		Key_File       string
 		Password_File  string
@@ -87,11 +88,13 @@ func GetConfig(path string) (*cfgType, error) {
 }
 
 func verifyConfig(c *cfgType) error {
-	if c.Global.Cert_File == `` {
-		return errors.New("Must specify Cert-File")
-	}
-	if c.Global.Key_File == `` {
-		return errors.New("Must specify Key-File")
+	if c.Global.Disable_TLS == false {
+		if c.Global.Cert_File == `` {
+			return errors.New("Must specify Cert-File")
+		}
+		if c.Global.Key_File == `` {
+			return errors.New("Must specify Key-File")
+		}
 	}
 	if c.Global.Password_File == `` {
 		return errors.New("Must specify Password-File")

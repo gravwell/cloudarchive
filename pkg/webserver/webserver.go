@@ -54,6 +54,7 @@ type Webserver struct {
 
 type WebserverConfig struct {
 	ListenString string // addr:port
+	DisableTLS   bool
 	CertFile     string
 	KeyFile      string
 	Logger       *log.Logger
@@ -63,25 +64,27 @@ type WebserverConfig struct {
 
 func NewWebserver(conf WebserverConfig) (*Webserver, error) {
 	var err error
+	var config *tls.Config
+	if !conf.DisableTLS {
+		config := &tls.Config{
+			MinVersion:               tls.VersionTLS12,
+			PreferServerCipherSuites: true,
+			CipherSuites: []uint16{
+				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+			},
+		}
+		if config.NextProtos == nil {
+			config.NextProtos = []string{"http/1.1"}
+		}
 
-	config := &tls.Config{
-		MinVersion:               tls.VersionTLS12,
-		PreferServerCipherSuites: true,
-		CipherSuites: []uint16{
-			tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-			tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-			tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-		},
-	}
-	if config.NextProtos == nil {
-		config.NextProtos = []string{"http/1.1"}
-	}
-
-	config.Certificates = make([]tls.Certificate, 1)
-	config.Certificates[0], err = tls.LoadX509KeyPair(conf.CertFile, conf.KeyFile)
-	if err != nil {
-		return nil, err
+		config.Certificates = make([]tls.Certificate, 1)
+		config.Certificates[0], err = tls.LoadX509KeyPair(conf.CertFile, conf.KeyFile)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	routineExitChan := make(chan error, 2)
