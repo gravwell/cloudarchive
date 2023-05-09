@@ -69,6 +69,7 @@ func main() {
 			FtpServer:  cfg.Global.FTP_Server,
 			Username:   cfg.Global.FTP_Username,
 			Password:   cfg.Global.FTP_Password,
+			Lgr:        lgr,
 		}
 		handler, err = ftpstore.NewFtpStoreHandler(fcfg)
 		if err != nil {
