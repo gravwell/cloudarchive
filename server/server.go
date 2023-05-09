@@ -83,6 +83,7 @@ func main() {
 
 	conf := webserver.WebserverConfig{
 		ListenString: cfg.Global.Listen_Address,
+		DisableTLS:   cfg.Global.Disable_TLS,
 		CertFile:     cfg.Global.Cert_File,
 		KeyFile:      cfg.Global.Key_File,
 		Logger:       lgr,
@@ -92,15 +93,15 @@ func main() {
 
 	ws, err := webserver.NewWebserver(conf)
 	if err != nil {
-		glog.Fatalln(err)
+		glog.Fatalln("Failed to create new webserver", err)
 	}
 
 	if err = ws.Init(); err != nil {
-		glog.Fatalln(err)
+		glog.Fatalln("Failed to init webserver", err)
 	}
 
 	if err = ws.Run(); err != nil {
-		glog.Fatalln(err)
+		glog.Fatalln("Failed to run webserver", err)
 	}
 
 	glog.Printf("Webserver running.")
@@ -110,6 +111,6 @@ func main() {
 	glog.Printf("Webserver exiting.")
 
 	if err = ws.Close(); err != nil {
-		glog.Fatalln(err)
+		glog.Fatalln("Failed to close webserver", err)
 	}
 }
