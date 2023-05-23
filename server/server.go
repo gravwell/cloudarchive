@@ -67,6 +67,7 @@ func main() {
 		fcfg := ftpstore.FtpStoreConfig{
 			LocalStore: cfg.Global.Storage_Directory,
 			FtpServer:  cfg.Global.FTP_Server,
+			BaseDir:    cfg.Global.Remote_Base_Directory,
 			Username:   cfg.Global.FTP_Username,
 			Password:   cfg.Global.FTP_Password,
 			Lgr:        lgr,
