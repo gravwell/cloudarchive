@@ -31,6 +31,7 @@ func launchWebserverFTP() error {
 	lgr := gravlog.New(discarder{})
 
 	cfg := ftpstore.FtpStoreConfig{
+		BaseDir:    "testing",
 		LocalStore: localStoreDir,
 		FtpServer:  "127.0.0.1:2000",
 		Username:   "gravwell",

@@ -66,7 +66,7 @@ func NewWebserver(conf WebserverConfig) (*Webserver, error) {
 	var err error
 	var config *tls.Config
 	if !conf.DisableTLS {
-		config := &tls.Config{
+		config = &tls.Config{
 			MinVersion:               tls.VersionTLS12,
 			PreferServerCipherSuites: true,
 			CipherSuites: []uint16{
