@@ -9,6 +9,7 @@
 package client
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/rsa"
@@ -350,14 +351,13 @@ func TestClientShardPush(t *testing.T) {
 		tags.TagPair{Name: `testing`, Value: 1},
 	}
 	tags := []string{`testing`}
-	cancel := make(chan bool, 1)
 
 	//make a fake shard dir with the
 	sdir := filepath.Join(baseDir, shardid)
 	if err = makeShardDir(sdir, shardid); err != nil {
 		t.Fatal(err)
 	}
-	if err = cli.PushShard(sid, sdir, tps, tags, cancel); err != nil {
+	if err = cli.PushShard(sid, sdir, tps, tags, context.Background()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -392,7 +392,7 @@ func TestClientShardPull(t *testing.T) {
 	}
 
 	sdir := filepath.Join(baseDir, "pull", shardid)
-	cancel := make(chan bool, 1)
+	cancel := context.Background()
 	if err = cli.PullShard(sid, sdir, cancel); err != nil {
 		t.Fatal(err)
 	}
@@ -459,7 +459,7 @@ func TestClientListIndexers(t *testing.T) {
 		tags.TagPair{Name: `testing`, Value: 1},
 	}
 	tags := []string{`testing`}
-	cancel := make(chan bool, 1)
+	cancel := context.Background()
 
 	//make a fake shard dir with the
 	sdir := filepath.Join(baseDir, shardid)

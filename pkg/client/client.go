@@ -312,7 +312,7 @@ func (c *Client) GetWellShardsInTimeframe(guid, well string, tf util.Timeframe) 
 	return r, err
 }
 
-func (c *Client) PushShard(sid ShardID, spath string, tps []tags.TagPair, tags []string, cancel chan bool) error {
+func (c *Client) PushShard(sid ShardID, spath string, tps []tags.TagPair, tags []string, ctx context.Context) error {
 	pkr := shardpacker.NewPacker(sid.Shard)
 	trdr, err := newReadTicker(pkr, tickChunkSize)
 	if err != nil {
@@ -361,7 +361,7 @@ tickLoop:
 			_ = <-reqRespChan
 			_ = <-packChan //ignore the packer error
 			break tickLoop
-		case _ = <-cancel:
+		case _ = <-ctx.Done():
 			pkr.Cancel()
 			//we should get an error about cancellation
 			_ = <-packChan //ignore the packer error
@@ -409,7 +409,7 @@ func (c *Client) asyncPackShard(spath string, tps []tags.TagPair, tgs []string, 
 	return
 }
 
-func (c *Client) PullShard(sid ShardID, spath string, cancel chan bool) error {
+func (c *Client) PullShard(sid ShardID, spath string, cancel context.Context) error {
 	//make the request and get the body
 	ctx, cf := context.WithCancel(context.Background())
 	defer cf()
@@ -461,7 +461,7 @@ tickLoop:
 			//discard the error, we re reporting the timeout
 			_ = <-reqRespChan
 			break tickLoop
-		case _ = <-cancel:
+		case _ = <-cancel.Done():
 			cf()
 			upkr.Cancel()
 			//we should get an error about cancellation
