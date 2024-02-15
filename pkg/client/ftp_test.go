@@ -9,6 +9,7 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"testing"
@@ -153,7 +154,7 @@ func TestFtpClientShardPush(t *testing.T) {
 		tags.TagPair{Name: `testing`, Value: 1},
 	}
 	tags := []string{`testing`}
-	cancel := make(chan bool, 1)
+	cancel := context.Background()
 
 	//make a fake shard dir with the
 	sdir := filepath.Join(baseDir, shardid)
@@ -195,7 +196,7 @@ func TestFtpClientShardPull(t *testing.T) {
 	}
 
 	sdir := filepath.Join(baseDir, "pull", shardid)
-	cancel := make(chan bool, 1)
+	cancel := context.Background()
 	if err = cli.PullShard(sid, sdir, cancel); err != nil {
 		t.Fatal(err)
 	}
@@ -238,7 +239,7 @@ func TestFtpClientListIndexers(t *testing.T) {
 		tags.TagPair{Name: `testing`, Value: 1},
 	}
 	tags := []string{`testing`}
-	cancel := make(chan bool, 1)
+	cancel := context.Background()
 
 	//make a fake shard dir with the
 	sdir := filepath.Join(baseDir, shardid)

@@ -9,6 +9,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -210,8 +211,8 @@ func PullShard(cli *client.Client, tm tags.TagManager, lgr *log.Logger) (err err
 		return
 	}
 
-	cancel := make(chan bool, 1)
-	defer close(cancel)
+	ctx, cf := context.WithCancel(context.Background())
+	defer cf()
 
 	sid := client.ShardID{
 		Indexer: guid,
@@ -219,7 +220,7 @@ func PullShard(cli *client.Client, tm tags.TagManager, lgr *log.Logger) (err err
 		Shard:   shard,
 	}
 
-	err = cli.PullShard(sid, shardPath, cancel)
+	err = cli.PullShard(sid, shardPath, ctx)
 	return
 }
 
@@ -233,8 +234,8 @@ func PushShard(cli *client.Client, tm tags.TagManager, lgr *log.Logger) (err err
 	}
 	tgs := []string{`test`, `test2`}
 
-	cancel := make(chan bool, 1)
-	defer close(cancel)
+	ctx, cf := context.WithCancel(context.Background())
+	defer cf()
 	if shardPath, wellName, shardId, err = getShardPath(); err != nil {
 		return
 	}
@@ -244,7 +245,7 @@ func PushShard(cli *client.Client, tm tags.TagManager, lgr *log.Logger) (err err
 		Well:    wellName,
 		Shard:   shardId,
 	}
-	err = cli.PushShard(sid, shardPath, tps, tgs, cancel)
+	err = cli.PushShard(sid, shardPath, tps, tgs, ctx)
 	return
 }
 
