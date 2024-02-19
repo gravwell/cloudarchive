@@ -15,7 +15,7 @@ import (
 	"net/http"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/gravwell/gravwell/v3/ingest/log"
+	"github.com/gravwell/gravwell/v4/ingest/log"
 )
 
 const (
