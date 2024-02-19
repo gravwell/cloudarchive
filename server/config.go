@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/gravwell/gcfg"
-	icfg "github.com/gravwell/gravwell/v3/ingest/config"
+	icfg "github.com/gravwell/gravwell/v4/ingest/config"
 	"golang.org/x/sys/unix"
 )
 

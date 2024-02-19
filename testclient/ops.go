@@ -20,7 +20,7 @@ import (
 	"github.com/gravwell/cloudarchive/pkg/util"
 
 	"github.com/google/uuid"
-	"github.com/gravwell/gravwell/v3/ingest/log"
+	"github.com/gravwell/gravwell/v4/ingest/log"
 	"github.com/manifoldco/promptui"
 )
 

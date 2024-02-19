@@ -19,7 +19,7 @@ import (
 	"github.com/gravwell/cloudarchive/pkg/ftpstore"
 	"github.com/gravwell/cloudarchive/pkg/webserver"
 
-	"github.com/gravwell/gravwell/v3/ingest/log"
+	"github.com/gravwell/gravwell/v4/ingest/log"
 )
 
 const (

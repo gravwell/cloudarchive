@@ -23,7 +23,7 @@ import (
 	"github.com/gravwell/cloudarchive/pkg/shardpacker"
 	"github.com/gravwell/cloudarchive/pkg/tags"
 	"github.com/gravwell/cloudarchive/pkg/util"
-	"github.com/gravwell/gravwell/v3/ingest/log"
+	"github.com/gravwell/gravwell/v4/ingest/log"
 	"github.com/jlaffaye/ftp"
 
 	"github.com/google/uuid"
