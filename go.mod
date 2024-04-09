@@ -1,22 +1,20 @@
 module github.com/gravwell/cloudarchive
 
-go 1.22
-
-toolchain go1.22.2
+go 1.21
 
 require (
 	github.com/dolmen-go/contextio v0.0.0-20220904134943-e50796217f5f
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.7.3
 	github.com/gravwell/gcfg v1.2.9-0.20221122204101-04b4a74a3018
-	github.com/gravwell/gravwell/v4 v4.0.0-20240218014615-8d273a538b71
+	github.com/gravwell/gravwell/v4 v4.0.0-20240409172643-37c143d39cdc
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef
 	github.com/jlaffaye/ftp v0.1.0
 	github.com/manifoldco/promptui v0.9.0
 	goftp.io/server v0.4.1
-	golang.org/x/crypto v0.18.0
-	golang.org/x/sys v0.16.0
+	golang.org/x/crypto v0.21.0
+	golang.org/x/sys v0.18.0
 )
 
 require (
@@ -28,13 +26,13 @@ require (
 	github.com/google/renameio v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/klauspost/compress v1.17.6 // indirect
+	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/minio/minio-go/v6 v6.0.46 // indirect
 	github.com/minio/sha256-simd v0.1.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/shirou/gopsutil v2.20.9+incompatible // indirect
-	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/term v0.16.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
