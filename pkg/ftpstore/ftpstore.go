@@ -62,6 +62,23 @@ func NewFtpStoreHandler(cfg FtpStoreConfig) (*ftpstore, error) {
 	}, nil
 }
 
+// make sure we can login, list, and put a test file to the base directory
+func (f *ftpstore) Preflight() (err error) {
+	var conn *ftp.ServerConn
+	pfstring := fmt.Sprintf("preflight test %v", time.Now())
+	if conn, err = f.getFtpClient(); err != nil {
+		return
+	} else if _, err = conn.List(f.cfg.BaseDir); err != nil {
+		conn.Quit()
+		return
+	} else if err = conn.Stor(".preflight_test", strings.NewReader(pfstring)); err != nil {
+		conn.Quit()
+		return
+	}
+	err = conn.Quit()
+	return
+}
+
 func (f *ftpstore) getFtpClient() (*ftp.ServerConn, error) {
 	do := ftp.DialWithTimeout(10 * time.Second)
 	c, err := ftp.Dial(f.cfg.FtpServer, do)
