@@ -29,6 +29,7 @@ var (
 
 type ShardHandler interface {
 	Preflight() error
+	Close() error
 	UnpackShard(cid uint64, guid uuid.UUID, well, shard string, rdr io.Reader) error
 	PackShard(cid uint64, guid uuid.UUID, well, shard string, wtr io.Writer) error
 	ListIndexes(cid uint64) ([]string, error)
@@ -133,6 +134,10 @@ type HashHandler struct {
 }
 
 func (hh *HashHandler) Preflight() (err error) {
+	return
+}
+
+func (hh *HashHandler) Close() (err error) {
 	return
 }
 
