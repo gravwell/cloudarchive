@@ -79,6 +79,10 @@ func (f *ftpstore) Preflight() (err error) {
 	return
 }
 
+func (f *ftpstore) Close() (err error) {
+	return
+}
+
 func (f *ftpstore) getFtpClient() (*ftp.ServerConn, error) {
 	do := ftp.DialWithTimeout(10 * time.Second)
 	c, err := ftp.Dial(f.cfg.FtpServer, do)

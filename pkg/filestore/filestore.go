@@ -53,6 +53,10 @@ func (f *filestore) Preflight() (err error) {
 	return
 }
 
+func (f *filestore) Close() (err error) {
+	return
+}
+
 func (f *filestore) ListIndexes(cid uint64) ([]string, error) {
 	var idx []string
 	custDir := filepath.Join(f.basedir, strconv.FormatUint(cid, 10))
