@@ -11,7 +11,6 @@ package shardpacker
 import (
 	"archive/tar"
 	"bytes"
-	"compress/zlib"
 	"context"
 	"encoding/gob"
 	"errors"
@@ -22,6 +21,7 @@ import (
 
 	"github.com/dolmen-go/contextio"
 	"github.com/gravwell/cloudarchive/pkg/tags"
+	"github.com/klauspost/compress/zlib"
 )
 
 const (
@@ -77,7 +77,7 @@ func NewPacker(id string) (p *Packer) {
 	p.ctx, p.cf = context.WithCancel(context.Background())
 	p.prdr, p.pwtr = io.Pipe() //get a pipe wired up
 	//get the compressing writer up wired to the pipe with a context wrapper
-	p.zwtr = zlib.NewWriter(contextio.NewWriter(p.ctx, p.pwtr))
+	p.zwtr, _ = zlib.NewWriterLevel(contextio.NewWriter(p.ctx, p.pwtr), zlib.BestSpeed)
 	p.twtr = tar.NewWriter(p.zwtr) //wire the tar writer to the compressed writer
 	return
 }
