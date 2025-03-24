@@ -13,6 +13,7 @@ require (
 	github.com/gravwell/gravwell/v3 v3.8.60
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef
 	github.com/jlaffaye/ftp v0.1.0
+	github.com/klauspost/compress v1.18.0
 	github.com/manifoldco/promptui v0.9.0
 	goftp.io/server v0.4.1
 	golang.org/x/crypto v0.36.0
@@ -28,7 +29,6 @@ require (
 	github.com/google/renameio v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/minio/minio-go/v6 v6.0.46 // indirect
 	github.com/minio/sha256-simd v0.1.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
