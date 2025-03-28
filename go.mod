@@ -17,6 +17,8 @@ require (
 	golang.org/x/sys v0.31.0
 )
 
+require github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
+
 require (
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/crewjam/rfc5424 v0.1.0 // indirect
@@ -35,11 +37,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/shirou/gopsutil v3.21.11+incompatible
+	github.com/shirou/gopsutil v2.20.9+incompatible // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
-	github.com/tklauser/go-sysconf v0.3.15 // indirect
-	github.com/tklauser/numcpus v0.10.0 // indirect
-	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
