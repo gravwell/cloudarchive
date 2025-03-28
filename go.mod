@@ -18,9 +18,8 @@ require (
 	golang.org/x/sys v0.31.0
 )
 
-require github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-
 require (
+	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/crewjam/rfc5424 v0.1.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
