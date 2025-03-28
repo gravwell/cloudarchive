@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/gravwell/gravwell/v3/ingest/log"
 )
 
