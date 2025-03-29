@@ -246,6 +246,7 @@ func (w *Webserver) buildRequestRouter() error {
 
 	// Handler to get back a list of tags for the indexer
 	w.m.PathPrefix(TAG_PATH).Handler(authChain.Handler(w.indexerGetTags)).Methods(http.MethodGet)
+
 	// Handler to let an indexer update its tag set
 	w.m.PathPrefix(TAG_PATH).Handler(authChain.Handler(w.indexerSyncTags)).Methods(http.MethodPost)
 
