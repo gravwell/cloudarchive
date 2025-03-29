@@ -28,6 +28,8 @@ var (
 )
 
 type ShardHandler interface {
+	Preflight() error
+	Close() error
 	UnpackShard(cid uint64, guid uuid.UUID, well, shard string, rdr io.Reader) error
 	PackShard(cid uint64, guid uuid.UUID, well, shard string, wtr io.Writer) error
 	ListIndexes(cid uint64) ([]string, error)
@@ -129,6 +131,14 @@ func (w *Webserver) shardPullHandler(res http.ResponseWriter, req *http.Request,
 // mock handler for use in testing
 type HashHandler struct {
 	Hash []byte
+}
+
+func (hh *HashHandler) Preflight() (err error) {
+	return
+}
+
+func (hh *HashHandler) Close() (err error) {
+	return
 }
 
 func (hh *HashHandler) ListIndexes(cid uint64) (r []string, err error) {

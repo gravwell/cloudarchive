@@ -10,7 +10,6 @@ package shardpacker
 
 import (
 	"archive/tar"
-	"compress/zlib"
 	"context"
 	"encoding/gob"
 	"errors"
@@ -21,6 +20,7 @@ import (
 
 	"github.com/dolmen-go/contextio"
 	"github.com/gravwell/cloudarchive/pkg/tags"
+	"github.com/klauspost/compress/zlib"
 )
 
 var (
