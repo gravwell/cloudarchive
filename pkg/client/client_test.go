@@ -18,7 +18,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"net"
@@ -165,13 +164,13 @@ func cleanup() {
 func TestMain(m *testing.M) {
 	idxUUID = uuid.New()
 	var err error
-	if baseDir, err = ioutil.TempDir(os.TempDir(), "gravcloud"); err != nil {
+	if baseDir, err = os.MkdirTemp(os.TempDir(), "gravcloud"); err != nil {
 		log.Fatal(err)
 	}
-	if serverDir, err = ioutil.TempDir(os.TempDir(), "gravcloud"); err != nil {
+	if serverDir, err = os.MkdirTemp(os.TempDir(), "gravcloud"); err != nil {
 		log.Fatal(err)
 	}
-	if localStoreDir, err = ioutil.TempDir(os.TempDir(), "gravcloud_ftp_localstore"); err != nil {
+	if localStoreDir, err = os.MkdirTemp(os.TempDir(), "gravcloud_ftp_localstore"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -200,7 +199,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// Stand up the FTP server
-	if ftpServerDir, err = ioutil.TempDir(os.TempDir(), "gravcloud_ftp"); err != nil {
+	if ftpServerDir, err = os.MkdirTemp(os.TempDir(), "gravcloud_ftp"); err != nil {
 		log.Fatal(err)
 	}
 	defer os.RemoveAll(ftpServerDir)
@@ -646,21 +645,21 @@ func makeShardDir(p, id string) error {
 	//drop index file
 	fpath := filepath.Join(p, id+`.index`)
 	data := []byte(`index stuff`)
-	if err := ioutil.WriteFile(fpath, data, 0660); err != nil {
+	if err := os.WriteFile(fpath, data, 0660); err != nil {
 		return err
 	}
 
 	//drop verify file
 	fpath = filepath.Join(p, id+`.verify`)
 	data = []byte(`verify stuff`)
-	if err := ioutil.WriteFile(fpath, data, 0660); err != nil {
+	if err := os.WriteFile(fpath, data, 0660); err != nil {
 		return err
 	}
 
 	//drop store file
 	fpath = filepath.Join(p, id+`.store`)
 	data = []byte(`store stuff`)
-	if err := ioutil.WriteFile(fpath, data, 0660); err != nil {
+	if err := os.WriteFile(fpath, data, 0660); err != nil {
 		return err
 	}
 
@@ -671,12 +670,12 @@ func makeShardDir(p, id string) error {
 	}
 	fpath = filepath.Join(p, id+`.accel`, `data`)
 	data = []byte(`accel data`)
-	if err := ioutil.WriteFile(fpath, data, 0660); err != nil {
+	if err := os.WriteFile(fpath, data, 0660); err != nil {
 		return err
 	}
 	fpath = filepath.Join(p, id+`.accel`, `keys`)
 	data = []byte(`accel keys`)
-	if err := ioutil.WriteFile(fpath, data, 0660); err != nil {
+	if err := os.WriteFile(fpath, data, 0660); err != nil {
 		return err
 	}
 
