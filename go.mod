@@ -1,6 +1,6 @@
 module github.com/gravwell/cloudarchive
 
-go 1.24.1
+go 1.24.2
 
 require (
 	github.com/dolmen-go/contextio v1.0.0
@@ -14,8 +14,8 @@ require (
 	github.com/klauspost/compress v1.18.0
 	github.com/manifoldco/promptui v0.9.0
 	goftp.io/server v0.4.1
-	golang.org/x/crypto v0.36.0
-	golang.org/x/sys v0.31.0
+	golang.org/x/crypto v0.37.0
+	golang.org/x/sys v0.32.0
 )
 
 require (
@@ -36,9 +36,9 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/shirou/gopsutil v2.20.9+incompatible // indirect
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/term v0.30.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/net v0.39.0 // indirect
+	golang.org/x/term v0.31.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

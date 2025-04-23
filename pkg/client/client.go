@@ -1,11 +1,14 @@
 /*************************************************************************
- * Copyright 2023 Gravwell, Inc. All rights reserved.
+ * Copyright 2025 Gravwell, Inc. All rights reserved.
  * Contact: <legal@gravwell.io>
  *
  * This software may be modified and distributed under the terms of the
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package client package is used for interacting with remote cloudarchive server implemenations
+// specific server implemenations may implement additonal APIs, this client covers the
+// basic APIs required to interact with the open source server implementations.
 package client
 
 import (
@@ -102,6 +105,9 @@ func NewClient(server string, enforceCertificate, useHttps bool) (*Client, error
 	//setup a transport that allows a bad client if the user asks for it
 	tr := &http.Transport{
 		TLSClientConfig: tlsConfig,
+		MaxIdleConns:    1,
+		IdleConnTimeout: 30 * time.Second,
+		MaxConnsPerHost: 2,
 	}
 	clnt := http.Client{
 		Transport:     tr,
@@ -174,7 +180,6 @@ func (c *Client) SetUserAgent(val string) {
 		val = defaultUserAgent
 	}
 	c.headerMap[`User-Agent`] = val
-	return
 }
 
 // TestLogin checks if we're logged in to the webserver
@@ -212,6 +217,9 @@ func (c *Client) Login(user, pass string) error {
 
 	//build up the request
 	req, err := http.NewRequest(`POST`, uri, strings.NewReader(loginCreds.Encode()))
+	if err != nil {
+		return err
+	}
 	for k, v := range c.headerMap {
 		req.Header.Add(k, v)
 	}
@@ -223,13 +231,12 @@ func (c *Client) Login(user, pass string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-
 	//check response
 	if resp == nil {
 		//this really should never happen
 		return errors.New("Invalid response")
 	}
+	defer resp.Body.Close()
 
 	//look for the redirect response
 	switch resp.StatusCode {
@@ -319,7 +326,7 @@ func (c *Client) PushShard(sid ShardID, spath string, tps []tags.TagPair, tags [
 		return err
 	}
 	c.clnt.Timeout = 0
-	ctx, cf := context.WithCancel(context.Background())
+	ctx, cf := context.WithCancel(ctx)
 	defer cf()
 	reqRespChan := make(chan error, 1)
 	go c.asyncPushShard(sid, trdr, ctx, reqRespChan)
@@ -339,7 +346,7 @@ tickLoop:
 			if err == nil {
 				err = <-reqRespChan //wait for the request to finish then bail
 			} else {
-				_ = <-reqRespChan // pack chan errored out, get the request to finish and discard error
+				<-reqRespChan // pack chan errored out, get the request to finish and discard error
 			}
 			break tickLoop
 		case err = <-reqRespChan:
@@ -347,24 +354,24 @@ tickLoop:
 				err = <-packChan //check the packer error
 			} else {
 				pkr.Cancel()
-				_ = <-packChan //ignore the packer error
+				<-packChan //ignore the packer error
 			}
 			break tickLoop
-		case _ = <-tckr:
+		case <-tckr:
 			tmr.Reset(tickTimeout) //and continue
-		case _ = <-tmr.C:
+		case <-tmr.C:
 			err = errors.New("upload timeout")
 			//cancel both contexts
 			pkr.Cancel()
 			cf()
 			//discard the error, we re reporting the timeout
-			_ = <-reqRespChan
-			_ = <-packChan //ignore the packer error
+			<-reqRespChan
+			<-packChan //ignore the packer error
 			break tickLoop
-		case _ = <-ctx.Done():
+		case <-ctx.Done():
 			pkr.Cancel()
 			//we should get an error about cancellation
-			_ = <-packChan //ignore the packer error
+			<-packChan //ignore the packer error
 			err = <-reqRespChan
 			break tickLoop
 		}
@@ -381,6 +388,9 @@ func (c *Client) asyncPushShard(sid ShardID, rdr io.Reader, ctx context.Context,
 	resp, err := c.methodRequestURLWithContext(http.MethodPost, sid.PushShardUrl(c.custID), cntType, rdr, ctx)
 	if err == nil && resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("Bad Status %s(%d): %s", resp.Status, resp.StatusCode, getBodyErr(resp.Body))
+	}
+	if resp != nil && resp.Body != nil {
+		resp.Body.Close()
 	}
 	rchan <- err
 }
@@ -406,7 +416,6 @@ func (c *Client) asyncPackShard(spath string, tps []tags.TagPair, tgs []string, 
 	} else {
 		rchan <- pkr.Close() //send final potential error
 	}
-	return
 }
 
 func (c *Client) PullShard(sid ShardID, spath string, cancel context.Context) error {
@@ -451,17 +460,17 @@ tickLoop:
 				upkr.Cancel()
 			}
 			break tickLoop
-		case _ = <-tckr:
+		case <-tckr:
 			tmr.Reset(tickTimeout) //and continue
-		case _ = <-tmr.C:
+		case <-tmr.C:
 			err = errors.New("download timeout")
 			//cancel both contexts
 			cf()
 			upkr.Cancel()
 			//discard the error, we re reporting the timeout
-			_ = <-reqRespChan
+			<-reqRespChan
 			break tickLoop
-		case _ = <-cancel.Done():
+		case <-cancel.Done():
 			cf()
 			upkr.Cancel()
 			//we should get an error about cancellation
@@ -482,7 +491,6 @@ func (c *Client) asyncUnpackShard(spath string, upkr *shardpacker.Unpacker, rcha
 		base: filepath.Clean(spath),
 	}
 	rchan <- upkr.Unpack(uph)
-	return
 }
 
 func (uh unpackHandler) HandleTagUpdate([]tags.TagPair) error {
