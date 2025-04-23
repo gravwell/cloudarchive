@@ -12,6 +12,7 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package flock implements a simple file lock and unlock functionality
 package flock
 
 import (

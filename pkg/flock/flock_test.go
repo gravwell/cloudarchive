@@ -12,7 +12,6 @@
 package flock
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -27,7 +26,7 @@ var (
 )
 
 func TestStart(t *testing.T) {
-	fout, err := ioutil.TempFile(os.TempDir(), prefix)
+	fout, err := os.CreateTemp(t.TempDir(), prefix)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -6,6 +6,7 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package tags implements a tag manager and tracking system for the Gravwell CloudArchive system
 package tags
 
 import (

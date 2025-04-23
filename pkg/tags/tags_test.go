@@ -10,7 +10,6 @@ package tags
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -28,7 +27,7 @@ var (
 
 func TestMain(m *testing.M) {
 	var err error
-	if baseDir, err = ioutil.TempDir(os.TempDir(), "gravtags"); err != nil {
+	if baseDir, err = os.MkdirTemp(os.TempDir(), "gravtags"); err != nil {
 		log.Fatal(err)
 	}
 	tagFile = filepath.Join(baseDir, `tags.dat`)
@@ -142,7 +141,7 @@ func TestTagmap(t *testing.T) {
 		t.Fatal(err)
 	}
 	if s != "thisisatest" {
-		t.Fatal(fmt.Sprintf("Did not get the right tag back: %v != thisisatest", s))
+		t.Fatalf("Did not get the right tag back: %v != thisisatest", s)
 	}
 	if err := tm.Close(); err != nil {
 		t.Fatal(err)
@@ -163,7 +162,7 @@ func TestTagmapReset(t *testing.T) {
 		t.Fatal(err)
 	}
 	if s != "thisisatest" {
-		t.Fatal(fmt.Sprintf("Did not get the right tag back: %v != thisisatest", s))
+		t.Fatalf("Did not get the right tag back: %v != thisisatest", s)
 	}
 	//reset it
 	set := []TagPair{{Name: `thisisatest`, Value: 1}}
@@ -198,7 +197,7 @@ func TestTagmapReset(t *testing.T) {
 		t.Fatal(err)
 	}
 	if s != "thisisatest" {
-		t.Fatal(fmt.Sprintf("Did not get the right tag back: %v != thisisatest", s))
+		t.Fatalf("Did not get the right tag back: %v != thisisatest", s)
 	}
 	if err := tm.Close(); err != nil {
 		t.Fatal(err)
@@ -219,7 +218,7 @@ func TestTagmapMerge(t *testing.T) {
 		t.Fatal(err)
 	}
 	if s != "thisisatest" {
-		t.Fatal(fmt.Sprintf("Did not get the right tag back: %v != thisisatest", s))
+		t.Fatalf("Did not get the right tag back: %v != thisisatest", s)
 	}
 	//merge some new tags it
 	set := []TagPair{{Name: `chucktesta`, Value: 99}}

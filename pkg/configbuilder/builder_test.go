@@ -10,12 +10,10 @@ package configbuilder
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -45,8 +43,7 @@ type wellInfo struct {
 }
 
 func makeTestDirs() (baseDir string, uuidPath string, err error) {
-	rand.Seed(time.Now().Unix())
-	baseDir, err = ioutil.TempDir(os.TempDir(), "configbuilder")
+	baseDir, err = os.MkdirTemp(os.TempDir(), "configbuilder")
 	if err != nil {
 		return
 	}
@@ -81,7 +78,7 @@ func makeTestDirs() (baseDir string, uuidPath string, err error) {
 				return
 			}
 			// Drop in the tags file
-			if err = ioutil.WriteFile(filepath.Join(shardPath, "tags"), []byte(tagList), 0777); err != nil {
+			if err = os.WriteFile(filepath.Join(shardPath, "tags"), []byte(tagList), 0777); err != nil {
 				os.RemoveAll(baseDir)
 				return
 			}
