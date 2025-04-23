@@ -72,6 +72,9 @@ func GetConfig(path string) (*cfgType, error) {
 	}
 	content = make([]byte, fi.Size())
 	n, err := fin.Read(content)
+	if err != nil {
+		return nil, err
+	}
 	fin.Close()
 	if int64(n) != fi.Size() {
 		return nil, errors.New("Failed to read config file")
@@ -88,7 +91,7 @@ func GetConfig(path string) (*cfgType, error) {
 }
 
 func verifyConfig(c *cfgType) error {
-	if c.Global.Disable_TLS == false {
+	if !c.Global.Disable_TLS {
 		if c.Global.Cert_File == `` {
 			return errors.New("Must specify Cert-File")
 		}

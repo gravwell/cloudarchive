@@ -128,7 +128,7 @@ func (w *Webserver) shardPullHandler(res http.ResponseWriter, req *http.Request,
 	}
 }
 
-// mock handler for use in testing
+// HashHandler is a mock handler for use in testing
 type HashHandler struct {
 	Hash []byte
 }
