@@ -6,13 +6,13 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package configbuilder implements all the configuration management and builder functions for the Gravwell CloudArchive system
 package configbuilder
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -39,8 +39,8 @@ func BuildConfig(stub []byte, baseDir string) (conf []byte, err error) {
 	conf = re.ReplaceAll(stub, []byte(fmt.Sprintf("${1}%v", indexerUUID)))
 
 	// Now, walk the basedir
-	var wells []os.FileInfo
-	wells, err = ioutil.ReadDir(baseDir)
+	var wells []os.DirEntry
+	wells, err = os.ReadDir(baseDir)
 	if err != nil {
 		return
 	}
@@ -54,8 +54,8 @@ func BuildConfig(stub []byte, baseDir string) (conf []byte, err error) {
 		p := filepath.Join(baseDir, well.Name())
 
 		// Now list that directory
-		var shards []os.FileInfo
-		shards, err = ioutil.ReadDir(p)
+		var shards []os.DirEntry
+		shards, err = os.ReadDir(p)
 		if err != nil {
 			return
 		}
@@ -89,7 +89,7 @@ func BuildConfig(stub []byte, baseDir string) (conf []byte, err error) {
 		var tagList []string
 		if well.Name() != `default` {
 			var tagContents []byte
-			tagContents, err = ioutil.ReadFile(filepath.Join(newestPath, "tags"))
+			tagContents, err = os.ReadFile(filepath.Join(newestPath, "tags"))
 			if err != nil {
 				return
 			}

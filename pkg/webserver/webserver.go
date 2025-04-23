@@ -6,6 +6,7 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package webserver implements the webserver and REST interface to the Gravwell CloudArchive system
 package webserver
 
 import (
@@ -14,7 +15,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	golog "log"
 	"net"
 	"net/http"
@@ -148,7 +149,7 @@ func (w *Webserver) routine() {
 	w.running = true
 
 	//get a nil logger up that discards everything
-	lgr := golog.New(ioutil.Discard, ``, 0)
+	lgr := golog.New(io.Discard, ``, 0)
 
 	// all the handlers should have been registered by now
 	srv := &http.Server{

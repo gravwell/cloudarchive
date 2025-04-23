@@ -6,6 +6,7 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package util implements helper functions for the Gravwell CloudArchive system
 package util
 
 import (
@@ -50,7 +51,7 @@ func ShardNameToDateRange(nm string) (s, e time.Time, err error) {
 	return
 }
 
-// this should generally be inlined everywhere
+// GetShardId converts a timestamp to a shard ID
 func GetShardId(t time.Time) ShardID {
 	return ShardID(entry.FromStandard(t).Sec & shardMask)
 }

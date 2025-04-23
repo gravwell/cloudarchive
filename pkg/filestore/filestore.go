@@ -6,13 +6,13 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package filestore implements the simple file storage plugin for Gravwell CloudArchive
 package filestore
 
 import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -60,7 +60,7 @@ func (f *filestore) Close() (err error) {
 func (f *filestore) ListIndexes(cid uint64) ([]string, error) {
 	var idx []string
 	custDir := filepath.Join(f.basedir, strconv.FormatUint(cid, 10))
-	files, err := ioutil.ReadDir(custDir)
+	files, err := os.ReadDir(custDir)
 	if err != nil {
 		return idx, err
 	}
@@ -79,7 +79,7 @@ func (f *filestore) ListIndexes(cid uint64) ([]string, error) {
 func (f *filestore) ListIndexerWells(cid uint64, guid uuid.UUID) ([]string, error) {
 	var wells []string
 	idxDir := filepath.Join(f.basedir, strconv.FormatUint(cid, 10), guid.String())
-	files, err := ioutil.ReadDir(idxDir)
+	files, err := os.ReadDir(idxDir)
 	if err != nil {
 		return wells, err
 	}
@@ -95,8 +95,8 @@ func (f *filestore) ListIndexerWells(cid uint64, guid uuid.UUID) ([]string, erro
 func (f *filestore) GetWellTimeframe(cid uint64, guid uuid.UUID, well string) (t util.Timeframe, err error) {
 	wellDir := filepath.Join(f.basedir, strconv.FormatUint(cid, 10), guid.String(), well)
 	// we will play it safe and walk every file
-	var files []os.FileInfo
-	files, err = ioutil.ReadDir(wellDir)
+	var files []os.DirEntry
+	files, err = os.ReadDir(wellDir)
 	if err != nil {
 		return
 	}
@@ -118,8 +118,8 @@ func (f *filestore) GetWellTimeframe(cid uint64, guid uuid.UUID, well string) (t
 func (f *filestore) GetShardsInTimeframe(cid uint64, guid uuid.UUID, well string, tf util.Timeframe) (shards []string, err error) {
 	wellDir := filepath.Join(f.basedir, strconv.FormatUint(cid, 10), guid.String(), well)
 	// we will play it safe and walk every file
-	var files []os.FileInfo
-	files, err = ioutil.ReadDir(wellDir)
+	var files []os.DirEntry
+	files, err = os.ReadDir(wellDir)
 	if err != nil {
 		return
 	}

@@ -10,7 +10,6 @@ package auth
 
 import (
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -34,7 +33,7 @@ var (
 
 func TestMain(m *testing.M) {
 	var err error
-	tdir, err = ioutil.TempDir(os.TempDir(), "gravauth")
+	tdir, err = os.MkdirTemp(os.TempDir(), "gravauth")
 	if err != nil {
 		log.Fatal(err)
 	}
