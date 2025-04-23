@@ -42,16 +42,14 @@ func init() {
 
 func CloseTagSets() (err error) {
 	mtx.Lock()
-	if tagSets != nil {
-		for k, v := range tagSets {
-			if v.handles > 0 {
-				err = ErrOpenHandles
-				break
-			} else if err = v.tm.Close(); err != nil {
-				break
-			}
-			delete(tagSets, k)
+	for k, v := range tagSets {
+		if v.handles > 0 {
+			err = ErrOpenHandles
+			break
+		} else if err = v.tm.Close(); err != nil {
+			break
 		}
+		delete(tagSets, k)
 	}
 	tagSets = nil
 	mtx.Unlock()

@@ -6,6 +6,7 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package auth implements the Gravwell CloudArchive authentication functions
 package auth
 
 import (

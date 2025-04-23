@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -35,7 +34,7 @@ var (
 
 func TestMain(m *testing.M) {
 	var err error
-	tdir, err = ioutil.TempDir(os.TempDir(), "gravpack")
+	tdir, err = os.MkdirTemp(os.TempDir(), "gravpack")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,7 +58,7 @@ func TestNew(t *testing.T) {
 	}
 	//run with a discarder, close will finish
 	p = NewPacker(id)
-	go io.Copy(ioutil.Discard, p)
+	go io.Copy(io.Discard, p)
 	if err := p.Close(); err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +78,7 @@ type ftest struct {
 func TestPack(t *testing.T) {
 	id := `deadbeef02`
 	p := NewPacker(id)
-	go io.Copy(ioutil.Discard, p) //just discarding
+	go io.Copy(io.Discard, p) //just discarding
 
 	tsts := []ftest{
 		ftest{tp: Store, v: `store`},
@@ -223,7 +222,7 @@ func testCycle(id string, tsts []ftest) error {
 	//check the files
 	for _, v := range tsts {
 		fpth := filepath.Join(sdir, v.tp.Filepath(id))
-		if cnt, err := ioutil.ReadFile(fpth); err != nil {
+		if cnt, err := os.ReadFile(fpth); err != nil {
 			return err
 		} else if string(cnt) != v.v {
 			return fmt.Errorf("Bad contents: %v != %v\n", string(cnt), v.v)

@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"flag"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -36,7 +35,7 @@ func init() {
 
 func main() {
 	// Read the file
-	stubContents, err := ioutil.ReadFile(*fStub)
+	stubContents, err := os.ReadFile(*fStub)
 	if err != nil {
 		log.Fatalf("Couldn't read config file stub: %v", err)
 	}

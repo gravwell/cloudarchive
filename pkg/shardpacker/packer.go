@@ -6,6 +6,7 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package shardpacker implements shard packing and unpacking functions for the Gravwell CloudArchive system
 package shardpacker
 
 import (
@@ -138,7 +139,7 @@ func (p *Packer) closePipeline() (err error) {
 	return
 }
 
-// Close with error is used to close but also send a read error to the pipe
+// CloseWithError is used to close but also send a read error to the pipe
 func (p *Packer) CloseWithError(err error) error {
 	p.Lock()
 	defer p.Unlock()

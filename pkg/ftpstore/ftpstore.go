@@ -6,6 +6,7 @@
  * BSD 2-clause license. See the LICENSE file for details.
  **************************************************************************/
 
+// Package ftpstore implements the FTP storage plugin for Gravwell CloudArchive
 package ftpstore
 
 import (
