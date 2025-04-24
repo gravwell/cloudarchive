@@ -1,4 +1,5 @@
 # This workflow is designed to setup a workspace and run all the enhanced linter checks
+# All PRs must pass these checks before merging
 name: golang-testing
 
 on:
