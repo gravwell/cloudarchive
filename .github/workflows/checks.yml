@@ -1,0 +1,58 @@
+# This workflow is designed to setup a workspace and run all the enhanced linter checks
+name: "Enhanced Linting and Correctness Checks"
+
+on:
+  pull_request: {}
+
+env:
+  CGO_ENABLED: 0
+
+concurrency:
+  cancel-in-progress: true
+  group: "${{ github.workflow }}-${{ github.ref }}"
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "Executing on  ${{ runner.os }} due to ${{ github.event_name }}"
+    - run: echo "Branch is ${{ github.ref }} executing on  ${{ runner.os }} due to ${{ github.event_name }}"
+
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: 1.24.2
+        cache: false
+
+    - name: Go Tidy
+      run: go mod tidy && git diff --exit-code
+
+    - name: Go Mod
+      run: go mod download
+
+    - name: Go Mod Verify
+      run: go mod verify
+
+    - name: Install govulncheck
+      run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+    - name: Install staticcheck
+      run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+    - name: go vet and test
+      run: |
+        go vet ./...
+        go test -v ./...
+
+    - name: staticcheck
+      run: staticcheck ./...
+
+    - name: govulncheck
+      run: govulncheck -test ./...
+    
+    - name: Final status
+      run: echo "Status is ${{ job.status }} 🚀"
