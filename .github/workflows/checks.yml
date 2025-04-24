@@ -1,5 +1,5 @@
 # This workflow is designed to setup a workspace and run all the enhanced linter checks
-name: "Enhanced Linting and Correctness Checks"
+name: golang-testing
 
 on:
   pull_request: {}
