@@ -2,12 +2,7 @@
 name: "Enhanced Linting and Correctness Checks"
 
 on:
-  push:
-    branches:
-      - '*'
-  pull_request:
-    branches:
-      - '*'
+  pull_request: {}
 
 env:
   CGO_ENABLED: 0
